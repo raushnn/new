@@ -4,8 +4,9 @@ from os import environ
 
 import openai
 from httpx import Client
-from langchain.llms import OpenAI
-from langchain.vectorstores import Qdrant
+from langchain_community.llms import OpenAI
+from langchain_qdrant import Qdrant
+from qdrant_client import QdrantClient
 
 # German proxy
 openai.proxy = {
@@ -13,15 +14,16 @@ openai.proxy = {
     "https://": "http://EN51X2TRnhgICus:YumWPpcW37GoVTD@185.173.26.133:42046",
 }
 
-# DEFAULT_OPENAI_API_KEY = environ["DEFAULT_OPENAI_API_KEY"]
-DEFAULT_OPENAI_API_KEY = 'sk-proj-BF3N2NaJkmlbsi0wr04iT3BlbkFJIrXqmhKmVfGotopoq46g'
+DEFAULT_OPENAI_API_KEY = environ["DEFAULT_OPENAI_API_KEY"]
 
-# QDRANT_CONNECTION_STRING = environ["QDRANT_CONNECTION_STRING"]
-QDRANT_CONNECTION_STRING = 'http://localhost:6333'  # Qdrant default URL
+QDRANT_CONNECTION_STRING = environ["QDRANT_CONNECTION_STRING"]
 
-VECTOR_STORE = Qdrant(
-    url=QDRANT_CONNECTION_STRING,
+VECTOR_STORE = QdrantClient(url=QDRANT_CONNECTION_STRING)
+
+# Create a collection if it doesn't exist
+VECTOR_STORE.create_collection(
     collection_name="main",
+    vectors_config={"size": 100, "distance": "Cosine"},
 )
 
 LLM_HTTPX_CLIENT = Client(
